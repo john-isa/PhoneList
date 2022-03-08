@@ -1,0 +1,365 @@
+openapi: "3.0.3"
+info:
+  title: Customer Phone List
+  contact:
+    name: John Isailofski
+    email: john.isailofski@gmail.com
+  version: "0.4.0"
+servers:
+  - url: http://localhost
+    description: dev
+paths:
+  #=========================================================#
+  # Phone number handling                                   #
+  #=========================================================#
+  /phonenumber:
+    get:
+      summary: Retrieve all phone numbers
+      operationId: getPhoneNumbers
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/getPhoneNumbersResponse"
+    post:
+      summary: Create one or more new phone numbers
+      operationId: postPhoneNumber
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/postPhoneNumberListRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/postPhoneNumberListResponse"
+    put:
+      summary: Activate phone number(s) and attach to a customer
+      operationId: putPhoneNumberByCustomer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/putPhoneNumberListRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/putPhoneNumberListResponse"
+
+  /phonenumber/{customerId}:
+    get:
+      summary: Retrieve all phone numbers attached to a customer
+      operationId: getPhoneNumberByCustomer
+      parameters:
+        - $ref: "#/components/parameters/customer_id"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/getPhoneListByCustomerResponse"
+  #=========================================================#
+  # Customer handling                                       #
+  #=========================================================#
+  /customer:
+    post:
+      summary: Create one or more phone customers
+      operationId: postNewCustomer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/postCustomerListRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/postCustomerListResponse"
+
+  /customer/{customerId}:
+    #============================================================#
+    # update a customer's details                                #
+    #============================================================#
+    put:
+      summary: Update one or more customer's details
+      operationId: putUpdateCustomer
+      parameters:
+        - $ref: "#/components/parameters/customer_id"
+      requestBody:
+        description: User details for update to the database are here
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/putCustomerDetailsRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/description"
+#===========================================================#
+# START OF DEFINITIONS                                      #
+#===========================================================#
+components:
+  #=========================================================#
+  # PARAMETER SECTION                                       #
+  #=========================================================#
+  parameters:
+    customer_id:
+      description: "The customer reference"
+      name: customerId
+      in: path
+      $ref: "#/components/schemas/customerId"
+    phone_id:
+      description: "The phone number reference"
+      name: phoneId
+      in: path
+      $ref: "#/components/schemas/phoneId"
+    first_name:
+      description: "The First name of the customer"
+      name: firstName
+      in: body
+      $ref: "#/components/schemas/firstName"
+    middle_name:
+      description: "The Middle name of the customer (if any)"
+      name: middleName
+      in: body
+      $ref: "#/components/schemas/middleName"
+    last_name:
+      description: "The Last name of the customer"
+      name: lastName
+      in: body
+      $ref: "#/components/schemas/lastName"
+    status:
+      description: "The state of the item ('active' or 'inactive')"
+      name: status
+      in: body
+      $ref: "#/components/schemas/status"
+  #=========================================================#
+  # SCHEMA SECTION                                          #
+  #=========================================================#
+  schemas:
+    #=======================================================#
+    # COMMON DEFINITIONS                                    #
+    #=======================================================#
+    code:
+      description: received code for a response
+      type: integer
+      minimum: 0
+      example: 1
+      default: 1
+    description:
+      description: received description for response
+      type: string
+      maxLength: 2048
+      example: "SUCCESS"
+      default: "SUCCESS"
+    #=======================================================#
+    # BASE DEFINITIONS                                      #
+    #=======================================================#
+    customerId:
+      description: "The ID number of the customer"
+      type: integer
+      minimum: 0
+      example: 0
+    phoneId:
+      description: "The phone number reference ID"
+      type: integer
+      minimum: 0
+      example: 0
+    firstName:
+      description: "The first-name of the customer"
+      type: string
+      maxLength: 256
+      example: Frederick
+    middleName:
+      description: "The middle-name of the customer (if any)"
+      type: string
+      maxLength: 256
+      example: Frederick
+    lastName:
+      description: "The last-name of the customer"
+      type: string
+      maxLength: 256
+      example: Frederick
+    status:
+      description: "Specify's if it is available for customer use"
+      enum: ["active", inactive']
+      example: "inactive"
+    requestResult:
+      description: "ResultCode of a given request"
+      type: object
+      properties:
+        code:
+          $ref: "#/components/schemas/code"
+        description:
+          $ref: "#/components/schemas/description"
+    #=======================================================#
+    # STRUCTURED DEFINITIONS                                #
+    #=======================================================#
+    customerDetails:
+      description: the customer's details
+      type: object
+      properties:
+        customerId:
+          $ref: "#/components/schemas/customerId"
+        firstName:
+          $ref: "#/components/schemas/firstName"
+        middleName:
+          $ref: "#/components/schemas/middleName"
+        lastName:
+          $ref: "#/components/schemas/lastName"
+        status:
+          $ref: "#/components/schemas/status"
+    phoneNumberDetails:
+      description: telephone number details
+      type: object
+      properties:
+        phone_id:
+          $ref: "#/components/schemas/phoneId"
+        customerId:
+          $ref: "#/components/schemas/customerId"
+        phone_type:
+          description: type of phone system in use by the number
+          enum: ["mobile", "ip", "landline"]
+          example: "mobile"
+        country_code:
+          description: code for each country
+          type: string
+          maxLength: 3
+          example: "061" # Australia
+        area_code:
+          description: code to define an std area
+          type: string
+          maxLength: 2
+          example: "03" # Melbourne/Victoria
+        phone_num:
+          description: the phone number
+          type: string
+          maxLength: 10
+          example: "1111222333" # mobile number (mobile is 10-digits while 'landline' and 'ip' are 8-digits)
+        status:
+          $ref: "#/components/schemas/status"
+    phoneNumberList:
+      description: list of phone numbers
+      type: array
+      items:
+        $ref: "#/components/schemas/phoneNumberDetails"
+    customerList:
+      description: list of customers
+      type: array
+      items:
+        $ref: "#/components/schemas/customerDetails"
+    customersNumber:
+      description: phone number(s) for a customer
+      type: object
+      properties:
+        customer:
+          $ref: "#/components/schemas/customerDetails"
+        phones:
+          type: array
+          items:
+            $ref: "#/components/schemas/phoneNumberDetails"
+    customersAndNumbersList:
+      description: list of phone numbers by customer
+      type: array
+      items:
+        $ref: "#/components/schemas/customersNumber"
+    #=======================================================#
+    # REQUESTS SECTION                                      #
+    #=======================================================#
+    postPhoneNumberListRequest:
+      description: Create one or more phone numbers
+      type: object
+      properties:
+        phoneDetails:
+          $ref: "#/components/schemas/phoneNumberList"
+    putPhoneNumberListRequest:
+      description: Activate a list of one or more phone numbers and attach them to a customer
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/customerId"
+        phoneDetails:
+          $ref: "#/components/schemas/phoneNumberList"
+    postCustomerListRequest:
+      description: Created one or more customers
+      type: object
+      properties:
+        phoneDetails:
+          $ref: "#/components/schemas/customerList"
+    putCustomerDetailsRequest:
+      description: Activate a list of one or more phone numbers and attach them to a customer
+      type: object
+      properties:
+        customerDetails:
+          $ref: "#/components/schemas/customerList"
+    #=======================================================#
+    # RESPONSES SECTION                                     #
+    #=======================================================#
+    getPhoneNumbersResponse:
+      description: a list of all the telephone numbers
+      type: object
+      properties:
+        result:
+          $ref: "#/components/schemas/requestResult"
+        phoneDetails:
+          $ref: "#/components/schemas/phoneNumberList"
+    postPhoneNumberListResponse:
+      description: a list of all the telephone numbers created
+      type: object
+      properties:
+        result:
+          $ref: "#/components/schemas/requestResult"
+        phoneDetails:
+          $ref: "#/components/schemas/phoneNumberList"
+    putPhoneNumberListResponse:
+      description: Activated a list of one or more phone numbers and attached them to a customer
+      type: object
+      properties:
+        result:
+          $ref: "#/components/schemas/requestResult"
+        phoneDetails:
+          $ref: "#/components/schemas/customersNumber"
+    getPhoneListByCustomerResponse:
+      description: received a list of all the telephone numbers for a given customer
+      type: object
+      properties:
+        result:
+          $ref: "#/components/schemas/requestResult"
+        phoneDetails:
+          $ref: "#/components/schemas/customersNumber"
+    postCustomerListResponse:
+      description: Created a list of all the telephone numbers created for a given customer
+      type: object
+      properties:
+        result:
+          $ref: "#/components/schemas/requestResult"
+        phoneDetails:
+          $ref: "#/components/schemas/customerList"
+    putCustomerDetailsResponse:
+      description: update a list of customers (one or more in the list)
+      type: object
+      properties:
+        result:
+          $ref: "#/components/schemas/requestResult"
+        phoneDetails:
+          $ref: "#/components/schemas/phoneNumberList"
+#===========================================================#
+# END OF DEFINITIONS                                        #
+#===========================================================#
